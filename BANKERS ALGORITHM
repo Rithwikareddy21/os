@@ -1,0 +1,92 @@
+import java.util.Scanner;
+
+public class BankersAlgorithm {
+    static int n; // Number of processes
+    static int m; // Number of resources
+    static int[][] Allocation;
+    static int[][] Max;
+    static int[][] Need;
+    static int[] Available;
+
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        
+        System.out.print("Enter number of processes: ");
+        n = sc.nextInt();
+
+        System.out.print("Enter number of resources: ");
+        m = sc.nextInt();
+
+        Allocation = new int[n][m];
+        Max = new int[n][m];
+        Need = new int[n][m];
+        Available = new int[m];
+
+        System.out.println("Enter Allocation Matrix:");
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++)
+                Allocation[i][j] = sc.nextInt();
+
+        System.out.println("Enter Max Matrix:");
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++)
+                Max[i][j] = sc.nextInt();
+
+        System.out.println("Enter Available Resources:");
+        for (int j = 0; j < m; j++)
+            Available[j] = sc.nextInt();
+
+        // Calculate Need Matrix
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < m; j++)
+                Need[i][j] = Max[i][j] - Allocation[i][j];
+
+        if (isSafe()) {
+            System.out.println("System is in a safe state.");
+        } else {
+            System.out.println("System is NOT in a safe state (unsafe).");
+        }
+    }
+
+    static boolean isSafe() {
+        boolean[] Finish = new boolean[n];
+        int[] Work = Available.clone();
+        int[] safeSequence = new int[n];
+        int count = 0;
+
+        while (count < n) {
+            boolean found = false;
+            for (int i = 0; i < n; i++) {
+                if (!Finish[i]) {
+                    int j;
+                    for (j = 0; j < m; j++) {
+                        if (Need[i][j] > Work[j])
+                            break;
+                    }
+
+                    if (j == m) {
+                        for (int k = 0; k < m; k++)
+                            Work[k] += Allocation[i][k];
+
+                        safeSequence[count++] = i;
+                        Finish[i] = true;
+                        found = true;
+                    }
+                }
+            }
+
+            if (!found) {
+                return false; // System is not in a safe state
+            }
+        }
+
+        System.out.print("Safe Sequence: ");
+        for (int i = 0; i < n; i++) {
+            System.out.print("P" + safeSequence[i]);
+            if (i != n - 1)
+                System.out.print(" -> ");
+        }
+        System.out.println();
+        return true;
+    }
+}
