@@ -1,0 +1,83 @@
+import java.util.*;
+
+class Process {
+    int pid, arrivalTime, burstTime, startTime, completionTime, waitingTime, turnaroundTime;
+
+    Process(int pid, int arrivalTime, int burstTime) {
+        this.pid = pid;
+        this.arrivalTime = arrivalTime;
+        this.burstTime = burstTime;
+    }
+}
+
+public class FCFS_Scheduler_With_Timeline {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+        Process[] processes = new Process[n];
+
+        for (int i = 0; i < n; i++) {
+            System.out.print("Enter arrival time and burst time for Process " + (i + 1) + ": ");
+            int at = sc.nextInt();
+            int bt = sc.nextInt();
+            processes[i] = new Process(i + 1, at, bt);
+        }
+
+        // Sort by arrival time
+        Arrays.sort(processes, Comparator.comparingInt(p -> p.arrivalTime));
+
+        int currentTime = 0;
+        double totalWT = 0, totalTAT = 0;
+
+        StringBuilder ganttBar = new StringBuilder();
+        StringBuilder ganttTime = new StringBuilder();
+
+        ganttBar.append("Gantt Chart:\n");
+        ganttBar.append(" ");
+
+        ganttTime.append("0");
+
+        for (Process p : processes) {
+            if (currentTime < p.arrivalTime) {
+                // Idle Time
+                ganttBar.append(" |Idle");
+                ganttTime.append(String.format("%6d", p.arrivalTime));
+                currentTime = p.arrivalTime;
+            }
+
+            p.startTime = currentTime;
+            p.completionTime = p.startTime + p.burstTime;
+            p.waitingTime = p.startTime - p.arrivalTime;
+            p.turnaroundTime = p.completionTime - p.arrivalTime;
+
+            totalWT += p.waitingTime;
+            totalTAT += p.turnaroundTime;
+
+            ganttBar.append(" | P").append(p.pid);
+            ganttTime.append(String.format("%6d", p.completionTime));
+
+            currentTime = p.completionTime;
+        }
+        ganttBar.append(" |");
+
+        // Print Gantt Chart
+        System.out.println("\n" + ganttBar);
+        System.out.println(ganttTime);
+
+        // Table Header
+        System.out.println("\n+-----------+--------------+------------+--------------+----------------+");
+        System.out.println("| ProcessID | Arrival Time | Burst Time | Waiting Time | Turnaround Time|");
+        System.out.println("+-----------+--------------+------------+--------------+----------------+");
+
+        for (Process p : processes) {
+            System.out.printf("|    P%-5d |     %-8d |    %-6d |     %-8d |     %-10d |\n",
+                    p.pid, p.arrivalTime, p.burstTime, p.waitingTime, p.turnaroundTime);
+        }
+
+        System.out.println("+-----------+--------------+------------+--------------+----------------+");
+
+        System.out.printf("\nAverage Waiting Time: %.2f\n", totalWT / n);
+        System.out.printf("Average Turnaround Time: %.2f\n", totalTAT / n);
+    }
+}
