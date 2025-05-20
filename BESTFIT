@@ -1,0 +1,45 @@
+public class BestFitFixedPartition {
+    public static void main(String[] args) {
+        // Fixed-size partitions
+        int partitions[] = {100, 500, 200, 300, 600}; // memory blocks
+
+        // Whether partition is allocated or not
+        boolean partitionAllocated[] = new boolean[partitions.length];
+
+        // Processes that need memory
+        int processes[] = {212, 417, 112, 426}; // process sizes
+
+        // To keep track of allocated partition for each process
+        int allocation[] = new int[processes.length];
+        for (int i = 0; i < allocation.length; i++) {
+            allocation[i] = -1; // initially all unallocated
+        }
+
+        // Best Fit Allocation
+        for (int i = 0; i < processes.length; i++) {
+            int bestIndex = -1;
+            for (int j = 0; j < partitions.length; j++) {
+                if (!partitionAllocated[j] && partitions[j] >= processes[i]) {
+                    if (bestIndex == -1 || partitions[j] < partitions[bestIndex]) {
+                        bestIndex = j; // Choose smaller suitable partition
+                    }
+                }
+            }
+
+            if (bestIndex != -1) {
+                allocation[i] = bestIndex;
+                partitionAllocated[bestIndex] = true; // mark partition as used
+            }
+        }
+
+        // Output
+        System.out.println("Process No.\tProcess Size\tPartition No.");
+        for (int i = 0; i < processes.length; i++) {
+            System.out.print((i + 1) + "\t\t" + processes[i] + "\t\t");
+            if (allocation[i] != -1)
+                System.out.println(allocation[i] + 1); // partition number (1-indexed)
+            else
+                System.out.println("Not Allocated");
+        }
+    }
+}
