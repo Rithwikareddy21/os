@@ -1,0 +1,78 @@
+import java.util.*;
+
+public class RoundRobinWithGantt {
+
+    public static void roundRobin(int[] processes, int[] burstTime, int quantum) {
+        int n = processes.length;
+        int[] remainingTime = Arrays.copyOf(burstTime, n);
+        int[] waitingTime = new int[n];
+        int[] turnaroundTime = new int[n];
+        int time = 0;
+
+        List<String> ganttProcess = new ArrayList<>();
+        List<Integer> ganttTime = new ArrayList<>();
+        ganttTime.add(0); // Gantt chart starts from 0
+
+        while (true) {
+            boolean done = true;
+
+            for (int i = 0; i < n; i++) {
+                if (remainingTime[i] > 0) {
+                    done = false;
+                    ganttProcess.add("P" + processes[i]);
+
+                    if (remainingTime[i] > quantum) {
+                        time += quantum;
+                        remainingTime[i] -= quantum;
+                    } else {
+                        time += remainingTime[i];
+                        waitingTime[i] = time - burstTime[i];
+                        remainingTime[i] = 0;
+                    }
+
+                    ganttTime.add(time); // Track the end time
+                }
+            }
+
+            if (done) break;
+        }
+
+        // Calculate Turnaround Time
+        for (int i = 0; i < n; i++) {
+            turnaroundTime[i] = waitingTime[i] + burstTime[i];
+        }
+
+        // Print Gantt Chart
+        System.out.println("\nGantt Chart:");
+        for (String p : ganttProcess) {
+            System.out.print("| " + p + " ");
+        }
+        System.out.println("|");
+
+        for (int t : ganttTime) {
+            System.out.print(t + "\t");
+        }
+        System.out.println();
+
+        // Print table
+        System.out.println("\nProcess\tBurst\tWaiting\tTurnaround");
+        int totalWT = 0, totalTAT = 0;
+        for (int i = 0; i < n; i++) {
+            totalWT += waitingTime[i];
+            totalTAT += turnaroundTime[i];
+            System.out.println("P" + processes[i] + "\t" + burstTime[i] + "\t" +
+                               waitingTime[i] + "\t" + turnaroundTime[i]);
+        }
+
+        System.out.printf("\nAverage Waiting Time = %.2f\n", (float) totalWT / n);
+        System.out.printf("Average Turnaround Time = %.2f\n", (float) totalTAT / n);
+    }
+
+    public static void main(String[] args) {
+        int[] processes = {1, 2, 3};
+        int[] burstTime = {10, 5, 8};
+        int quantum = 2;
+
+        roundRobin(processes, burstTime, quantum);
+    }
+}
