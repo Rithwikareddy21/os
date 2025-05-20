@@ -1,0 +1,97 @@
+import java.util.*;
+
+public class Priority_Scheduling {
+    public static void main(String[] args) {
+        Scanner sc = new Scanner(System.in);
+
+        System.out.print("Enter number of processes: ");
+        int n = sc.nextInt();
+
+        int[] process = new int[n];
+        int[] arrivalTime = new int[n];
+        int[] burstTime = new int[n];
+        int[] priority = new int[n];
+        int[] completionTime = new int[n];
+        int[] waitingTime = new int[n];
+        int[] turnaroundTime = new int[n];
+        boolean[] isCompleted = new boolean[n];
+
+        // For Gantt Chart
+        List<String> ganttProcess = new ArrayList<>();
+        List<Integer> ganttTime = new ArrayList<>();
+
+        for (int i = 0; i < n; i++) {
+            process[i] = i + 1;
+            System.out.print("Enter arrival time for process " + process[i] + ": ");
+            arrivalTime[i] = sc.nextInt();
+            System.out.print("Enter burst time for process " + process[i] + ": ");
+            burstTime[i] = sc.nextInt();
+            System.out.print("Enter priority for process " + process[i] + " (lower number = higher priority): ");
+            priority[i] = sc.nextInt();
+        }
+
+        int currentTime = 0, completed = 0;
+
+        ganttTime.add(currentTime); // Initial time for Gantt chart
+
+        while (completed != n) {
+            int idx = -1;
+            int highestPriority = Integer.MAX_VALUE;
+
+            // Find highest priority process that has arrived
+            for (int i = 0; i < n; i++) {
+                if (arrivalTime[i] <= currentTime && !isCompleted[i]) {
+                    if (priority[i] < highestPriority || (priority[i] == highestPriority && arrivalTime[i] < arrivalTime[idx])) {
+                        highestPriority = priority[i];
+                        idx = i;
+                    }
+                }
+            }
+
+            if (idx != -1) {
+                ganttProcess.add("P" + process[idx]);
+                currentTime += burstTime[idx];
+                ganttTime.add(currentTime);
+
+                completionTime[idx] = currentTime;
+                turnaroundTime[idx] = completionTime[idx] - arrivalTime[idx];
+                waitingTime[idx] = turnaroundTime[idx] - burstTime[idx];
+                isCompleted[idx] = true;
+                completed++;
+            } else {
+                // CPU is idle
+                ganttProcess.add("Idle");
+                currentTime++;
+                ganttTime.add(currentTime);
+            }
+        }
+
+        // Print Gantt Chart
+        System.out.println("\nGantt Chart:");
+        for (String p : ganttProcess) {
+            System.out.print("| " + p + " ");
+        }
+        System.out.println("|");
+
+        for (int time : ganttTime) {
+            System.out.printf("%-5d", time);
+        }
+
+        // Print Table
+        System.out.println("\n\nProcess\tArrival\tBurst\tPriority\tWaiting\tTAT\tCompletion");
+        for (int i = 0; i < n; i++) {
+            System.out.println("P" + process[i] + "\t" + arrivalTime[i] + "\t" + burstTime[i] + "\t" +
+                    priority[i] + "\t\t" + waitingTime[i] + "\t" + turnaroundTime[i] + "\t" + completionTime[i]);
+        }
+
+        // Average Times
+        double totalWT = 0, totalTAT = 0;
+        for (int i = 0; i < n; i++) {
+            totalWT += waitingTime[i];
+            totalTAT += turnaroundTime[i];
+        }
+
+        System.out.printf("\nAverage Waiting Time: %.2f\n", totalWT / n);
+        System.out.printf("Average Turnaround Time: %.2f\n", totalTAT / n);
+    }
+}
